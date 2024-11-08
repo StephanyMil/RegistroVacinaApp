@@ -1,18 +1,40 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, ScrollView, Image, StyleSheet } from 'react-native';
-import api from '../../utils/api';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  ScrollView,
+  Image,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
+import api from "../../utils/api";
 
 const CalendarioScreen = () => {
-  const [idade, setIdade] = useState('');
+  const [idade, setIdade] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [calendario, setCalendario] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const determineCategory = (age: number) => {
+    if (age >= 0 && age <= 10) return "Criança";
+    if (age > 10 && age <= 19) return "Adolescente";
+    if (age > 19 && age <= 59) return "Adulto";
+    if (age >= 60) return "Idoso";
+    return null;
+  };
 
   const buscarCalendario = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await api.get('/calendario/vacinacao', {
+      const ageNum = parseInt(idade);
+      const category = determineCategory(ageNum);
+      setActiveCategory(category);
+
+      const response = await api.get("/calendario/vacinacao", {
         params: { idade },
       });
       setCalendario(response.data);
@@ -23,91 +45,101 @@ const CalendarioScreen = () => {
     }
   };
 
-  const categorias = {
-    crianca: calendario?.filter((item: any) => item.categoria === 'Criança'),
-    adolescente: calendario?.filter((item: any) => item.categoria === 'Adolescente'),
-    adulto: calendario?.filter((item: any) => item.categoria === 'Adulto'),
-    idoso: calendario?.filter((item: any) => item.categoria === 'Idoso'),
-  };
-
   const getIconForCategory = (category: string) => {
     switch (category) {
-      case 'Criança':
-        //return require('../../assets/images/children_icon.png');
-      case 'Adolescente':
-        //return require('../../assets/images/teen_icon.png');
-      case 'Adulto':
-        //return require('../../assets/images/adult_icon.png');
-      case 'Idoso':
-        //return require('../../assets/images/elder_icon.png');
+      case "Criança":
+        return require("../../assets/images/children_icon.png");
+      case "Adolescente":
+        return require("../../assets/images/teen_icon.png");
+      case "Adulto":
+        return require("../../assets/images/adult_icon.png");
+      case "Idoso":
+        return require("../../assets/images/elder_icon.png");
       default:
-        //return null;
+        return null;
     }
   };
 
-  const renderCalendario = (categoria: string, items: any) => (
-    <View style={styles.categoryCard}>
-      <Image source={getIconForCategory(categoria)} style={styles.categoryIcon} />
-      <Text style={styles.categoriaTitle}>{categoria}</Text>
-      {items.map((item: any) => (
-        <View key={item.calendarioId} style={styles.vaccineItem}>
-          <Text style={styles.vaccineName}>Vacinas: {item.vacinas}</Text>
-          <Text>Doses: {item.doses}</Text>
-          <Text>
-            Faixa Etária: {item.faixaEtariaObjeto.mesesinicial} - {item.faixaEtariaObjeto.mesesfinal} meses
-          </Text>
+  const renderCategoryScreen = (category: string) => {
+    const categoryData = calendario?.filter(
+      (item: any) => item.categoria === category
+    );
+
+    return (
+      <View style={styles.categoryScreen}>
+        <View style={styles.iconContainer}>
+          <Image
+            source={getIconForCategory(category)}
+            style={styles.categoryIcon}
+          />
+          <Text style={styles.categoryTitle}>{`Vacinas ${category}`}</Text>
         </View>
-      ))}
-    </View>
-  );
+
+        <ScrollView style={styles.vaccineList}>
+          {categoryData?.map((item: any) => (
+            <View key={item.calendarioId} style={styles.vaccineCard}>
+              <Text style={styles.vaccineName}>{item.vacinas}</Text>
+              <Text style={styles.vaccineInfo}>Doses: {item.doses}</Text>
+              <Text style={styles.vaccineInfo}>
+                Faixa Etária: {item.faixa_etaria.de} - {item.faixa_etaria.ate}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
+
+        <View style={styles.bottomNav}>
+          <Image
+            source={require("../../assets/images/bottom_nav.png")}
+            style={styles.bottomNavImage}
+          />
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Image
-          source={require('../../assets/images/calendar (2) 1.png')}
-          style={styles.headerImage}
-        />
-        <Text style={styles.headerTitle}>Calendário de Vacinação</Text>
-      </View>
+      {!activeCategory ? (
+        <>
+          <View style={styles.header}>
+            <Image
+              source={require("../../assets/images/calendar 1.png")}
+              style={styles.headerImage}
+            />
+            <Text style={styles.headerTitle}>Calendário de Vacinação</Text>
+          </View>
 
-      <TextInput
-        placeholder="Digite sua idade"
-        keyboardType="numeric"
-        onChangeText={setIdade}
-        value={idade}
-        style={styles.input}
-      />
-      <Button title="Buscar Calendário" onPress={buscarCalendario} />
+          <TextInput
+            placeholder="Digite sua idade"
+            keyboardType="numeric"
+            onChangeText={setIdade}
+            value={idade}
+            style={styles.input}
+          />
+          <Button title="Buscar Calendário" onPress={buscarCalendario} />
 
-      {isLoading && <Text>Carregando...</Text>}
-      {error && <Text style={styles.errorText}>Erro: {error}</Text>}
-
-      <ScrollView>
-        {categorias.crianca && renderCalendario('Criança', categorias.crianca)}
-        {categorias.adolescente && renderCalendario('Adolescente', categorias.adolescente)}
-        {categorias.adulto && renderCalendario('Adulto', categorias.adulto)}
-        {categorias.idoso && renderCalendario('Idoso', categorias.idoso)}
-      </ScrollView>
+          {isLoading && <Text>Carregando...</Text>}
+          {error && <Text style={styles.errorText}>Erro: {error}</Text>}
+        </>
+      ) : (
+        renderCategoryScreen(activeCategory)
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: '#fff',
     flex: 1,
+    backgroundColor: "#001F3F",
   },
   header: {
-    backgroundColor: '#0066cc',
+    backgroundColor: "#0066cc",
     paddingVertical: 20,
     paddingHorizontal: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 20,
-    borderRadius: 10,
   },
   headerImage: {
     width: 40,
@@ -115,54 +147,76 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   headerTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   input: {
+    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: '#000',
-    padding: 10,
+    borderColor: "#ccc",
+    padding: 15,
+    marginHorizontal: 20,
     marginVertical: 10,
     borderRadius: 8,
-  },
-  categoriaTitle: {
-    fontWeight: 'bold',
-    fontSize: 20,
-    textAlign: 'center',
-    marginVertical: 10,
-  },
-  categoryCard: {
-    backgroundColor: '#f0f0f0',
-    padding: 15,
-    borderRadius: 15,
-    marginBottom: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  categoryIcon: {
-    width: 60,
-    height: 60,
-    marginBottom: 10,
-  },
-  vaccineItem: {
-    marginVertical: 10,
-    textAlign: 'center',
-  },
-  vaccineName: {
-    fontWeight: 'bold',
     fontSize: 16,
   },
+  categoryScreen: {
+    flex: 1,
+    backgroundColor: "#001F3F",
+  },
+  iconContainer: {
+    alignItems: "center",
+    padding: 20,
+  },
+  categoryIcon: {
+    width: 80,
+    height: 80,
+    marginBottom: 10,
+  },
+  categoryTitle: {
+    color: "#fff",
+    fontSize: 24,
+    fontWeight: "bold",
+    marginVertical: 10,
+  },
+  vaccineList: {
+    flex: 1,
+    padding: 20,
+  },
+  vaccineCard: {
+    backgroundColor: "#003366",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  vaccineName: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  vaccineInfo: {
+    color: "#fff",
+    fontSize: 16,
+    marginVertical: 2,
+  },
+  bottomNav: {
+    height: 60,
+    backgroundColor: "#002147",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  bottomNavImage: {
+    width: Dimensions.get("window").width,
+    height: 60,
+    resizeMode: "contain",
+  },
   errorText: {
-    color: 'red',
+    color: "red",
+    textAlign: "center",
     marginTop: 10,
   },
 });
 
 export default CalendarioScreen;
-
-

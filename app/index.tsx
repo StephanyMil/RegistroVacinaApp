@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import React from "react";
+import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
 
 const HomeScreen = () => {
   const router = useRouter();
@@ -9,17 +9,20 @@ const HomeScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Image source={require('../assets/images/ic_vaccine.png')} style={styles.headerImage} />
+        <Image
+          source={require("../assets/images/ic_vaccine.png")}
+          style={styles.headerImage}
+        />
         <Text style={styles.headerText}>Vacinação</Text>
       </View>
 
       {/* Calendário Button */}
       <TouchableOpacity
         style={styles.button}
-        onPress={() => router.push('/calendario')}
+        onPress={() => router.push("/calendario")}
       >
         <Image
-          source={require('../assets/images/calendario.png')}
+          source={require("../assets/images/calendario.png")}
           style={styles.image}
         />
       </TouchableOpacity>
@@ -32,17 +35,17 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
+    backgroundColor: "#fff",
+    padding: 10,
   },
   header: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0066cc', // Azul para o cabeçalho
-    paddingVertical: 20, // Aumentar o padding vertical
-    marginBottom: 20, // Separação entre o cabeçalho e o botão
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "start",
+    justifyContent: "center",
+    backgroundColor: "#0066cc",
+    paddingVertical: 20,
+    marginBottom: 20,
     borderRadius: 10,
   },
   headerImage: {
@@ -52,12 +55,12 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   button: {
-    alignItems: 'center',
-    backgroundColor: '#E2EAFF',
+    alignItems: "center",
+    backgroundColor: "#E2EAFF",
     padding: 10,
     borderRadius: 8,
     width: 50,
@@ -69,12 +72,9 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 14,
-    color: '#000',
-    marginTop: 10, // Espaço entre o botão e o texto
+    color: "#000",
+    marginTop: 10,
   },
 });
 
 export default HomeScreen;
-
-
-
